@@ -1,13 +1,50 @@
 #include "game.h"
 #include <iostream>
+#include <chrono>
+#include <string>
+#include <sstream>
+#include <thread>
 #include "SDL.h"
 
-Game::Game(std::size_t grid_width, std::size_t grid_height)
-    : snake(grid_width, grid_height),
-      engine(dev()),
-      random_w(0, static_cast<int>(grid_width - 1)),
-      random_h(0, static_cast<int>(grid_height - 1)) {
-  PlaceFood();
+Game::Game(std::size_t grid_width, std::size_t grid_height) {
+  
+  snake = std::shared_ptr<Snake>(new Snake(grid_width, grid_height));
+  food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
+}
+
+void Game::ChooseLevel() {
+    std::string input;
+    std::cout << "Welcome to Snake!" << std::endl;
+    std::cout << "Please enter a game level (1, 2, OR 3): ";
+
+    int input_level;
+    std::getline(std::cin, input);
+    std::istringstream input_stream(input);
+    input_stream >> input_level;
+
+    bool validInput = input.length() == 1 && input_level >= 1 && input_level <= 3;
+
+    while(!validInput) {
+      std::cout << "BAD INPUT!" << std::endl;
+      std::cout << "Please enter a VALID game level (1, 2, OR 3): ";
+      std::getline(std::cin, input);
+      input_stream = std::istringstream(input);
+      input_stream >> input_level;
+      validInput = input.length() == 1 && input_level >= 1 && input_level <= 3;
+    }
+
+    _curr_level = (GameLevel) input_level;
+    snake->SetGameLevel(_curr_level);
+    snake->speed *= (int)(_curr_level);
+    food->SetGameLevel(_curr_level);
+    food->SetSnakeRef(snake);
+    PlaceFood();
+
+    if (_curr_level >= GameLevel::kTWO) {
+      bonus_food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
+      std::thread t(RandomlyPlaceBonusFood());
+    }
+
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -25,7 +62,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    renderer.Render(*snake, food->GetSDL());
 
     frame_end = SDL_GetTicks();
 
@@ -51,37 +88,39 @@ void Game::Run(Controller const &controller, Renderer &renderer,
 }
 
 void Game::PlaceFood() {
-  int x, y;
-  while (true) {
-    x = random_w(engine);
-    y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
-    // food.
-    if (!snake.SnakeCell(x, y)) {
-      food.x = x;
-      food.y = y;
-      return;
-    }
+  food->Update();
+}
+
+void Game::RandomlyPlaceBonusFood() {
+  std::random_device rd;
+  std::mt19937 eng(rd());
+  std::uniform_int_distribution<>distr(1, 2);
+  double random_phase = distr(eng);
+
+
+  while(true) {
+    bonus_food->Update();
+    bonus_food->is_bomb = !bonus_food->is_bomb;
   }
 }
 
 void Game::Update() {
-  if (!snake.alive) return;
+  if (!snake->alive) return;
 
-  snake.Update();
+  snake->Update();
 
-  int new_x = static_cast<int>(snake.head_x);
-  int new_y = static_cast<int>(snake.head_y);
+  int new_x = static_cast<int>(snake->head_x);
+  int new_y = static_cast<int>(snake->head_y);
 
   // Check if there's food over here
-  if (food.x == new_x && food.y == new_y) {
+  if (food->GetX() == new_x && food->GetY() == new_y) {
     score++;
     PlaceFood();
     // Grow snake and increase speed.
-    snake.GrowBody();
-    snake.speed += 0.02;
+    snake->GrowBody();
+    snake->speed += 0.02;
   }
 }
 
 int Game::GetScore() const { return score; }
-int Game::GetSize() const { return snake.size; }
+int Game::GetSize() const { return snake->size; }

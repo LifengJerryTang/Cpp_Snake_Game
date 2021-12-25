@@ -12,7 +12,8 @@ class Renderer {
   ~Renderer();
 
 
-  void Render(Snake const snake, SDL_Point const &food);
+  void Render(GameLevel game_level, Snake const snake, 
+                      SDL_Point const &food, SDL_Point const &bonus_food);
   void UpdateWindowTitle(int score, int fps);
 
  private:

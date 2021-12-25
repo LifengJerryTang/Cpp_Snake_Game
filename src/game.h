@@ -6,6 +6,8 @@
 #include "controller.h"
 #include "renderer.h"
 #include "snake.h"
+#include <thread>
+#include <mutex>
 #include <memory>
 #include "food.h"
 #include "gameobject.h"
@@ -25,11 +27,13 @@ class Game {
   std::unique_ptr<Food> food;
   std::unique_ptr<Food> bonus_food;
   GameLevel _curr_level;
+  std::mutex _mutex;
 
   int score{0};
 
   void PlaceFood();
   void Update();
+  void RandomlyPlaceBonusFood();
 };
 
 #endif

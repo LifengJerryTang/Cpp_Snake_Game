@@ -42,6 +42,8 @@ void Game::ChooseLevel() {
 
     if (_curr_level >= GameLevel::kTWO) {
       bonus_food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
+      bonus_food->SetSnakeRef(snake);
+      bonus_food->SetGameLevel(_curr_level);
       std::thread t(RandomlyPlaceBonusFood());
     }
 
@@ -62,7 +64,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(*snake, food->GetSDL());
+    renderer.Render(_curr_level, *snake, food->GetSDL(), bonus_food->GetSDL());
 
     frame_end = SDL_GetTicks();
 
@@ -92,15 +94,18 @@ void Game::PlaceFood() {
 }
 
 void Game::RandomlyPlaceBonusFood() {
-  std::random_device rd;
-  std::mt19937 eng(rd());
-  std::uniform_int_distribution<>distr(1, 2);
-  double random_phase = distr(eng);
-
 
   while(true) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    std::random_device rd;
+    std::mt19937 eng(rd());
+    std::uniform_int_distribution<>distr(0, 1);
+    int random_phase = distr(eng);
     bonus_food->Update();
-    bonus_food->is_bomb = !bonus_food->is_bomb;
+    if (random_phase == 1) {
+      bonus_food->is_bomb = !bonus_food->is_bomb;
+    }  
   }
 }
 

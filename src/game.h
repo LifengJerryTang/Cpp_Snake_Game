@@ -23,6 +23,8 @@ class Game {
 
  private:
   // Snake snake;
+  std::size_t grid_width;
+  std::size_t grid_height;
   std::shared_ptr<Snake> snake;
   std::unique_ptr<Food> food;
   std::unique_ptr<Food> bonus_food;

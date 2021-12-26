@@ -7,7 +7,7 @@
 #include <future>
 #include "SDL.h"
 
-Game::Game(std::size_t grid_width, std::size_t grid_height) {
+Game::Game(std::size_t grid_width, std::size_t grid_height): grid_width(grid_width), grid_height(grid_height) {
   
   snake = std::shared_ptr<Snake>(new Snake(grid_width, grid_height));
   food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
@@ -44,19 +44,19 @@ void Game::ChooseLevel() {
     food->SetSnakeRef(snake);
     PlaceFood();
 
-    if (_curr_level > GameLevel::kONE) {
+    if (_curr_level > GameLevel::kTWO) {
       bonus_food->SetSnakeRef(snake);
       bonus_food->SetGameLevel(_curr_level);
-    } else {
-      bonus_food.reset();
-    }
+    } 
 
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
                std::size_t target_frame_duration) {
-  if (_curr_level > GameLevel::kONE) {
-    std::async(std::launch::async, &Game::RandomlyPlaceBonusFood, this);
+
+  std::thread t;
+  if (_curr_level > GameLevel::kTWO) {
+    t = std::thread(&Game::RandomlyPlaceBonusFood, this);
   }
 
   Uint32 title_timestamp = SDL_GetTicks();
@@ -94,6 +94,20 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     if (frame_duration < target_frame_duration) {
       SDL_Delay(target_frame_duration - frame_duration);
     }
+
+
+    std::unique_lock<std::mutex> lck(_mutex);
+
+    if (!snake->alive) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      running = false;
+    }
+
+    lck.unlock();
+  }
+
+   if (_curr_level > GameLevel::kTWO) {
+     t.join();
   }
 }
 
@@ -103,23 +117,24 @@ void Game::PlaceFood() {
 
 void Game::RandomlyPlaceBonusFood() {
 
-  std::unique_lock<std::mutex> lock(_mutex);
-
   while(snake->alive) {
+    std::unique_lock<std::mutex> lock(_mutex);
     lock.unlock();
-
+    std::cout << "Randomly placing bonus food concurrently...." << std::endl;
+    
     std::random_device rd;
     std::mt19937 eng(rd());
     std::uniform_int_distribution<>distr(0, 1);
     int random_phase = distr(eng);
     lock.lock();
     bonus_food->Update();
-    lock.unlock();
+   
     if (random_phase == 1) {
       bonus_food->is_bomb = !bonus_food->is_bomb;
     }  
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    lock.unlock();
+    std::cout << "Is the snake alive? " << snake->alive << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(4000));
   }
 }
 
@@ -150,18 +165,33 @@ void Game::Update() {
     lock.unlock();
   } 
 
-  if (bonus_food->GetX() == new_x && bonus_food->GetY() == new_y) {
+  if (_curr_level > GameLevel::kTWO) {
     lock.lock();
-    if (bonus_food->is_bomb) {
-      snake->alive = false;
-    } else {
-      score += 5;
-      snake->speed += 0.005;
+    if (bonus_food->GetX() == new_x && bonus_food->GetY() == new_y) {
+      if (bonus_food->is_bomb) {
+        snake->alive = false;
+      } else {
+        score += 5;
+        snake->speed += 0.005;
+        bonus_food->Update();
+        bonus_food->is_bomb = !bonus_food->is_bomb;
+      }
+     
     }
     lock.unlock();
   }
 
+  if ((int) _curr_level >= 3) {
+    lock.lock();
+    if (snake->head_x <= 1 || snake->head_y <= 1 || snake->head_x >= grid_height - 1 || snake->head_y >= grid_width - 1) {
+      std::cout << "Hit the wall!" << std::endl;
+      snake->alive = false;
+    }
 
+    lock.unlock();
+  }
+
+  
 }
 
 int Game::GetScore() const { return score; }

@@ -35,6 +35,7 @@ Renderer::Renderer(const std::size_t screen_width,
 }
 
 Renderer::~Renderer() {
+  std::cout << "Renderer destructor called "<< std::endl;
   SDL_DestroyWindow(sdl_window);
   SDL_Quit();
 }
@@ -56,7 +57,7 @@ void Renderer::Render(GameLevel game_level, Snake const snake,
   block.y = food.y * block.h;
   SDL_RenderFillRect(sdl_renderer, &block);
 
-  if (game_level >= GameLevel::kTWO) {
+  if (game_level > GameLevel::kTWO) {
       block2.w = screen_width / grid_width;
       block2.h = screen_height / grid_height;
       SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
@@ -80,6 +81,7 @@ void Renderer::Render(GameLevel game_level, Snake const snake,
     SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x7A, 0xCC, 0xFF);
   } else {
     SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
+
   }
   SDL_RenderFillRect(sdl_renderer, &block);
 

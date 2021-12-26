@@ -38,17 +38,22 @@ void Game::ChooseLevel() {
    
     _curr_level = (GameLevel) input_level;
      std::cout << "Level: " << (int) (_curr_level) << std::endl;
-    snake->SetGameLevel(_curr_level);
-    snake->speed *= (int)(_curr_level);
-    food->SetGameLevel(_curr_level);
-    food->SetSnakeRef(snake);
-    PlaceFood();
+     InitializeGameStates();
+   
 
-    if (_curr_level > GameLevel::kTWO) {
-      bonus_food->SetSnakeRef(snake);
-      bonus_food->SetGameLevel(_curr_level);
-    } 
+}
 
+void Game::InitializeGameStates() {
+  snake->SetGameLevel(_curr_level);
+  snake->speed *= (int)(_curr_level);
+  food->SetGameLevel(_curr_level);
+  food->SetSnakeRef(snake);
+  PlaceFood();
+
+  if (_curr_level > GameLevel::kTWO) {
+    bonus_food->SetSnakeRef(snake);
+    bonus_food->SetGameLevel(_curr_level);
+  } 
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -64,9 +69,10 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   Uint32 frame_end;
   Uint32 frame_duration;
   int frame_count = 0;
-  bool running = true;
+  running = true;
 
   while (running) {
+
     frame_start = SDL_GetTicks();
 
     // Input, Update, Render - the main game loop.
@@ -96,8 +102,8 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     }
 
 
+   
     std::unique_lock<std::mutex> lck(_mutex);
-
     if (!snake->alive) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
       running = false;
@@ -117,9 +123,15 @@ void Game::PlaceFood() {
 
 void Game::RandomlyPlaceBonusFood() {
 
-  while(snake->alive) {
+  while(true) {
     std::unique_lock<std::mutex> lock(_mutex);
+    if (!snake->alive || !running){
+       lock.unlock();
+       break;
+    }
+
     lock.unlock();
+   
     std::cout << "Randomly placing bonus food concurrently...." << std::endl;
     
     std::random_device rd;

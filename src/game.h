@@ -16,6 +16,7 @@ class Game {
  public:
   Game(std::size_t grid_width, std::size_t grid_height);
   void ChooseLevel();
+  void InitializeGameStates();
   void Run(Controller const &controller, Renderer &renderer,
            std::size_t target_frame_duration);
   int GetScore() const;
@@ -30,6 +31,7 @@ class Game {
   std::unique_ptr<Food> bonus_food;
   GameLevel _curr_level;
   std::mutex _mutex;
+  bool running{false};
 
   int score{0};
 

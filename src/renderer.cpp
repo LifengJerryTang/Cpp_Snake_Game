@@ -35,7 +35,7 @@ Renderer::Renderer(const std::size_t screen_width,
 }
 
 Renderer::~Renderer() {
-  std::cout << "Renderer destructor called "<< std::endl;
+//  std::cout << "Renderer destructor called "<< std::endl;
   SDL_DestroyWindow(sdl_window);
   SDL_Quit();
 }

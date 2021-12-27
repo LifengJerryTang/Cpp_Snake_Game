@@ -132,7 +132,7 @@ void Game::RandomlyPlaceBonusFood() {
 
     lock.unlock();
    
-    std::cout << "Randomly placing bonus food concurrently...." << std::endl;
+    //std::cout << "Randomly placing bonus food concurrently...." << std::endl;
     
     std::random_device rd;
     std::mt19937 eng(rd());
@@ -145,7 +145,7 @@ void Game::RandomlyPlaceBonusFood() {
       bonus_food->is_bomb = !bonus_food->is_bomb;
     }  
     lock.unlock();
-    std::cout << "Is the snake alive? " << snake->alive << std::endl;
+ //   std::cout << "Is the snake alive? " << snake->alive << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(4000));
   }
 }

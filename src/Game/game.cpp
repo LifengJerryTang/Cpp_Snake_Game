@@ -59,9 +59,15 @@ void Game::InitializeGameStates() {
 void Game::Run(Controller const &controller, Renderer &renderer,
                std::size_t target_frame_duration) {
 
-  std::thread t;
+  std::thread level2_thread;
+  std::thread level3_thread;
+
   if (_curr_level > GameLevel::kTWO) {
-    t = std::thread(&Game::RandomlyPlaceBonusFood, this);
+    level2_thread = std::thread(&Game::RandomlyPlaceBonusFood, this);
+  }
+
+  if ((int) _curr_level >= 3) {
+  //  level3_thread = std::thread(this);
   }
 
   Uint32 title_timestamp = SDL_GetTicks();
@@ -113,8 +119,10 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 
    if (_curr_level > GameLevel::kTWO) {
-     t.join();
-  }
+     level2_thread.join();
+   }
+
+
 }
 
 void Game::PlaceFood() {

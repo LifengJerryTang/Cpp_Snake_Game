@@ -3,14 +3,14 @@
 
 #include <random>
 #include "SDL.h"
-#include "controller.h"
-#include "renderer.h"
-#include "snake.h"
+#include "Controller/controller.h"
+#include "Renderer/renderer.h"
+#include "GameObject/snake.h"
 #include <thread>
 #include <mutex>
 #include <memory>
-#include "food.h"
-#include "gameobject.h"
+#include "GameObject/food.h"
+#include "GameObject/gameobject.h"
 
 class Game {
  public:
@@ -21,6 +21,7 @@ class Game {
            std::size_t target_frame_duration);
   int GetScore() const;
   int GetSize() const;
+  
 
  private:
   // Snake snake;

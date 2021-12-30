@@ -1,7 +1,7 @@
 #include "controller.h"
 #include <iostream>
 #include "SDL.h"
-#include "snake.h"
+#include "GameObject/snake.h"
 
 void Controller::ChangeDirection(std::shared_ptr<Snake> snake, Snake::Direction input,
                                  Snake::Direction opposite) const {

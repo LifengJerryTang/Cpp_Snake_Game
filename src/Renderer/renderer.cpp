@@ -1,7 +1,7 @@
 #include "renderer.h"
 #include <iostream>
 #include <string>
-#include "gameobject.h"
+#include "GameObject/gameobject.h"
 
 Renderer::Renderer(const std::size_t screen_width,
                    const std::size_t screen_height,

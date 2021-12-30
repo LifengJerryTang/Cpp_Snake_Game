@@ -40,7 +40,8 @@ Renderer::~Renderer() {
   SDL_Quit();
 }
 
-void Renderer::Render(GameLevel game_level, Snake const snake, 
+
+void Renderer::Render(GameLevel game_level, Snake const snake, Snake const computer_snake,
                       SDL_Point const &food, SDL_Point const &bonus_food) {
   SDL_Rect block;
   SDL_Rect block2;
@@ -52,7 +53,7 @@ void Renderer::Render(GameLevel game_level, Snake const snake,
   SDL_RenderClear(sdl_renderer);
 
   // Render food
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xCC, 0x00, 0xFF);
+  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xFF, 0x00, 0xFF);
   block.x = food.x * block.w;
   block.y = food.y * block.h;
   SDL_RenderFillRect(sdl_renderer, &block);
@@ -60,14 +61,26 @@ void Renderer::Render(GameLevel game_level, Snake const snake,
   if (game_level > GameLevel::kTWO) {
       block2.w = screen_width / grid_width;
       block2.h = screen_height / grid_height;
-      SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
+      SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x8C, 0x00, 0xFF);
       block2.x = bonus_food.x * block2.w;
       block2.y = bonus_food.y * block2.h;
       SDL_RenderFillRect(sdl_renderer, &block2);
   }
 
+  RenderSnake(snake, 0XFF, block);
+
+  if ((int)game_level >= 3) {
+    RenderComputerSnake(computer_snake, block);
+  }
+
+  // Update Screen
+  SDL_RenderPresent(sdl_renderer);
+}
+
+void Renderer::RenderSnake(Snake const snake, int color, SDL_Rect& block) {
+  
   // Render snake's body
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+  SDL_SetRenderDrawColor(sdl_renderer, color, color, color, color);
   for (SDL_Point const &point : snake.body) {
     block.x = point.x * block.w;
     block.y = point.y * block.h;
@@ -85,8 +98,10 @@ void Renderer::Render(GameLevel game_level, Snake const snake,
   }
   SDL_RenderFillRect(sdl_renderer, &block);
 
-  // Update Screen
-  SDL_RenderPresent(sdl_renderer);
+}
+
+void Renderer::RenderComputerSnake(Snake const snake, SDL_Rect& block) {
+  RenderSnake(snake, 0XF9, block);
 }
 
 

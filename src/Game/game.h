@@ -28,6 +28,7 @@ class Game {
   std::size_t grid_width;
   std::size_t grid_height;
   std::shared_ptr<Snake> snake;
+  std::shared_ptr<Snake> computer_snake;
   std::unique_ptr<Food> food;
   std::unique_ptr<Food> bonus_food;
   GameLevel _curr_level;
@@ -39,6 +40,7 @@ class Game {
   void PlaceFood();
   void Update();
   void RandomlyPlaceBonusFood();
+  void PlayComputerSnake();
 };
 
 #endif

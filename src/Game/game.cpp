@@ -10,6 +10,7 @@
 Game::Game(std::size_t grid_width, std::size_t grid_height): grid_width(grid_width), grid_height(grid_height) {
   
   snake = std::shared_ptr<Snake>(new Snake(grid_width, grid_height));
+  computer_snake = std::shared_ptr<Snake>(new Snake(grid_width, grid_height));
   food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
   bonus_food = std::unique_ptr<Food>(new Food(grid_width, grid_height));
 }
@@ -67,7 +68,13 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 
   if ((int) _curr_level >= 3) {
-  //  level3_thread = std::thread(this);
+    computer_snake->head_x = 2;
+    computer_snake->head_y = 2;
+    for(int i = 0; i < 100; i++) {
+      computer_snake->GrowBody();
+      computer_snake->Update();
+    }
+    level3_thread = std::thread(&Game::PlayComputerSnake, this);
   }
 
   Uint32 title_timestamp = SDL_GetTicks();
@@ -84,7 +91,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(_curr_level, *snake, food->GetSDL(), bonus_food->GetSDL());
+    renderer.Render(_curr_level, *snake, *computer_snake, food->GetSDL(), bonus_food->GetSDL());
 
     frame_end = SDL_GetTicks();
 
@@ -106,8 +113,6 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     if (frame_duration < target_frame_duration) {
       SDL_Delay(target_frame_duration - frame_duration);
     }
-
-
    
     std::unique_lock<std::mutex> lck(_mutex);
     if (!snake->alive) {
@@ -122,6 +127,9 @@ void Game::Run(Controller const &controller, Renderer &renderer,
      level2_thread.join();
    }
 
+   if ((int)_curr_level >= 3) {
+     level3_thread.join();
+   }
 
 }
 
@@ -139,8 +147,6 @@ void Game::RandomlyPlaceBonusFood() {
     }
 
     lock.unlock();
-   
-    //std::cout << "Randomly placing bonus food concurrently...." << std::endl;
     
     std::random_device rd;
     std::mt19937 eng(rd());
@@ -153,8 +159,33 @@ void Game::RandomlyPlaceBonusFood() {
       bonus_food->is_bomb = !bonus_food->is_bomb;
     }  
     lock.unlock();
- //   std::cout << "Is the snake alive? " << snake->alive << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+  }
+}
+
+void Game::PlayComputerSnake() {
+  while(true) {
+    std::unique_lock<std::mutex> lock(_mutex);
+    if (!snake->alive || !running){
+       lock.unlock();
+       break;
+    }
+    lock.unlock();
+
+    
+    std::random_device rd;
+    std::mt19937 eng(rd());
+    std::uniform_int_distribution<>distr(1, 4);
+
+    computer_snake->direction = (Snake::Direction)(distr(eng));
+    std::uniform_int_distribution<>distr2(15, 20);
+    int rand_num_updates = distr2(eng);
+
+    for (int i = 0; i < rand_num_updates; i++) {
+        computer_snake->Update();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+
   }
 }
 

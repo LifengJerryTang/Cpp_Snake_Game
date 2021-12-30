@@ -16,21 +16,23 @@ gameobject.h
 SDL.h
 ../src/GameObject/SDL.h
 
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/controller.cpp
-controller.h
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/controller.h
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/renderer.cpp
+renderer.h
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/renderer.h
 iostream
 -
-SDL.h
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/SDL.h
-GameObject/snake.h
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/GameObject/snake.h
-
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/controller.h
-GameObject/snake.h
-/home/workspace/CppND-Capstone-Snake-Game/src/Controller/GameObject/snake.h
-memory
+string
 -
+GameObject/gameobject.h
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/GameObject/gameobject.h
+
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/renderer.h
+vector
+-
+SDL.h
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/SDL.h
+GameObject/snake.h
+/home/workspace/CppND-Capstone-Snake-Game/src/Renderer/GameObject/snake.h
 
 /usr/include/SDL2/SDL.h
 SDL_main.h

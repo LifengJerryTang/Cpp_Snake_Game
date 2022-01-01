@@ -35,13 +35,11 @@ void Game::ChooseLevel() {
       input_stream >> input_level;
       validInput = input.length() == 1 && input_level >= 1 && input_level <= 3;
     }
-
    
     _curr_level = (GameLevel) input_level;
      std::cout << "Level: " << (int) (_curr_level) << std::endl;
      InitializeGameStates();
    
-
 }
 
 void Game::InitializeGameStates() {
@@ -178,12 +176,14 @@ void Game::PlayComputerSnake() {
     std::uniform_int_distribution<>distr(1, 4);
 
     computer_snake->direction = (Snake::Direction)(distr(eng));
-    std::uniform_int_distribution<>distr2(15, 20);
+    std::uniform_int_distribution<>distr2(55, 60);
     int rand_num_updates = distr2(eng);
 
     for (int i = 0; i < rand_num_updates; i++) {
+        lock.lock();
         computer_snake->Update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        lock.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 
   }
@@ -216,7 +216,7 @@ void Game::Update() {
     lock.unlock();
   } 
 
-  if (_curr_level > GameLevel::kTWO) {
+  if ((int)_curr_level >= 2) {
     lock.lock();
     if (bonus_food->GetX() == new_x && bonus_food->GetY() == new_y) {
       if (bonus_food->is_bomb) {
@@ -234,9 +234,20 @@ void Game::Update() {
 
   if ((int) _curr_level >= 3) {
     lock.lock();
-    if (snake->head_x <= 1 || snake->head_y <= 1 || snake->head_x >= grid_height - 1 || snake->head_y >= grid_width - 1) {
-      std::cout << "Hit the wall!" << std::endl;
+    if (snake->head_x <= 1 || snake->head_y <= 1 || snake->head_x >= grid_height - 1 
+        || snake->head_y >= grid_width - 1) {
+      std::cout << "YOU HIT THE WALL..." << std::endl;
       snake->alive = false;
+    }
+
+    for (auto &snake_body: snake->body) {
+      for (auto &zombie_body: computer_snake->body) {
+        if (snake_body.x == zombie_body.x && snake_body.y == zombie_body.y) {
+          std::cout<< "YOU WERE EATEN BY ZOMBIE..." << std::endl;
+          snake->alive = false;
+          break;
+        }
+      }
     }
 
     lock.unlock();

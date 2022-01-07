@@ -9,8 +9,7 @@
   * Level 2: In this level, a bonus food (red colored) will appear and change its location concurrently when the player
     is controlling the snake. When the snake eats the bonus food, it will earn 5 points and will not grow its body. HOWEVER, the bonus food will randomly toggle itself between a bomb and the actual edible food WITHOUT changing its
     appearance. The snake dies if it ends up eating the bomb.
-  * Level 3: Everything in level 2 will be included in level 3, but what's different is that the boundary of the 
-    game window will serve as walls. The snake dies if it hits any of the 4 walls.
+  * Level 3: Avoid colliding with the zombie snake! The player should try to make the snake earn as many points as possible without hitting the zombie snake. Also, the boundary will be served as walls; if the snake hits any of the 4 walls, it dies.
 2. Play the game by controlling the snake and earn as many points as possible!
 3. If the snake dies, the game terminates and will display the earned points and your final size in the console.
 
